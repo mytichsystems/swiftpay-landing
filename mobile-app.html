@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftPay — تطبيق المدفوعات الذكي | MYTHIC SYSTEM</title>
+    <meta name="description" content="أرسل واستقبل الأموال في ثوانٍ مع SwiftPay. تطبيق مدفوعات آمن وسريع يدعم أكثر من 50 عملة عالمية.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --p1: #7c3aed;
+            --p2: #a855f7;
+            --p3: #c084fc;
+            --acc1: #06b6d4;
+            --acc2: #22d3ee;
+            --gold: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
+            --bg: #0f0a1e;
+            --bg2: #160d2e;
+            --card: rgba(255,255,255,0.04);
+            --card-border: rgba(124,58,237,0.25);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            direction: rtl;
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--p1); border-radius: 3px; }
+
+        /* BG Elements */
+        .bg-mesh {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 80% 60% at 70% 10%, rgba(124,58,237,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 0% 80%, rgba(6,182,212,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 40% at 50% 50%, rgba(168,85,247,0.06) 0%, transparent 60%);
+        }
+        .particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .particle {
+            position: absolute; width: 2px; height: 2px; background: rgba(192,132,252,0.5);
+            border-radius: 50%; animation: floatParticle linear infinite;
+        }
+        @keyframes floatParticle {
+            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-20px) translateX(var(--dx)); opacity: 0; }
+        }
+
+        /* NAV */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 999;
+            padding: 18px 5%;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(15,10,30,0.75);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--card-border);
+            transition: all 0.3s;
+        }
+        nav.scrolled { padding: 12px 5%; background: rgba(15,10,30,0.95); }
+        .logo {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none; color: white;
+        }
+        .logo-ring {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--p1), var(--acc1));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 900;
+            box-shadow: 0 0 25px rgba(124,58,237,0.5);
+        }
+        .logo-name { font-size: 20px; font-weight: 800; }
+        .logo-name span { color: var(--acc1); }
+        .nav-links { display: flex; gap: 32px; list-style: none; }
+        .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--p3); }
+        .nav-download {
+            display: flex; gap: 10px;
+        }
+        .dl-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 9px 18px; border-radius: 10px;
+            font-size: 13px; font-weight: 700; text-decoration: none;
+            transition: all 0.3s; font-family: 'Cairo', sans-serif;
+        }
+        .dl-ios {
+            background: rgba(255,255,255,0.08); color: white;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .dl-ios:hover { background: rgba(255,255,255,0.15); }
+        .dl-android {
+            background: linear-gradient(135deg, var(--p1), var(--p2));
+            color: white; box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+        }
+        .dl-android:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(124,58,237,0.6); }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center;
+            padding: 110px 5% 80px;
+            position: relative; z-index: 1;
+        }
+        .hero-inner {
+            max-width: 1200px; margin: 0 auto; width: 100%;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+        }
+        .hero-tag {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.4);
+            padding: 7px 16px; border-radius: 50px;
+            font-size: 13px; color: var(--p3); font-weight: 600; margin-bottom: 22px;
+        }
+        .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: blink 1.5s infinite; }
+        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+        .hero h1 { font-size: clamp(36px, 5vw, 60px); font-weight: 900; line-height: 1.2; margin-bottom: 22px; }
+        .grad { background: linear-gradient(135deg, var(--p2), var(--acc1)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .hero p { font-size: 17px; color: var(--muted); line-height: 1.85; margin-bottom: 36px; max-width: 480px; }
+        .download-btns { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 50px; }
+        .big-dl {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 28px; border-radius: 14px;
+            text-decoration: none; font-family: 'Cairo', sans-serif;
+            transition: all 0.3s; min-width: 160px;
+        }
+        .big-dl-icon { font-size: 26px; }
+        .big-dl-text-small { font-size: 11px; color: rgba(255,255,255,0.7); }
+        .big-dl-text-big { font-size: 16px; font-weight: 800; color: white; }
+        .big-dl-apple {
+            background: white; color: #1a1a2e;
+        }
+        .big-dl-apple .big-dl-text-small { color: rgba(0,0,0,0.5); }
+        .big-dl-apple .big-dl-text-big { color: #1a1a2e; }
+        .big-dl-apple:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(255,255,255,0.2); }
+        .big-dl-google {
+            background: linear-gradient(135deg, var(--p1), var(--acc1));
+            box-shadow: 0 8px 30px rgba(124,58,237,0.5);
+        }
+        .big-dl-google:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(124,58,237,0.7); }
+
+        .app-rating {
+            display: flex; align-items: center; gap: 16px;
+        }
+        .rating-avatars { display: flex; }
+        .rating-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 2px solid var(--bg); margin-left: -10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700; color: white;
+        }
+        .rating-text { }
+        .rating-stars { color: #fbbf24; font-size: 14px; }
+        .rating-count { font-size: 12px; color: var(--muted); }
+
+        /* Phone Mockup */
+        .hero-visual { display: flex; justify-content: center; position: relative; }
+        .phone-wrapper {
+            position: relative; display: flex; justify-content: center;
+        }
+        .phone-wrapper::before {
+            content: '';
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(124,58,237,0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulseBg 3s ease-in-out infinite;
+        }
+        @keyframes pulseBg {
+            0%,100%{transform: translate(-50%,-50%) scale(1); opacity:0.7;}
+            50%{transform: translate(-50%,-50%) scale(1.1); opacity:1;}
+        }
+        .phone-frame {
+            width: 260px;
+            background: #1a0f35;
+            border-radius: 44px;
+            padding: 14px;
+            border: 2px solid rgba(124,58,237,0.4);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 60px rgba(124,58,237,0.3);
+            position: relative; z-index: 2;
+            animation: phoneFloat 4s ease-in-out infinite;
+        }
+        @keyframes phoneFloat {
+            0%,100%{transform: translateY(0);}
+            50%{transform: translateY(-15px);}
+        }
+        .phone-notch {
+            width: 90px; height: 28px;
+            background: #1a0f35;
+            border-radius: 0 0 20px 20px;
+            margin: 0 auto 14px;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .notch-cam { width: 8px; height: 8px; background: #2d1f4e; border-radius: 50%; }
+        .notch-light { width: 4px; height: 4px; background: var(--acc1); border-radius: 50%; animation: blink 2s infinite; }
+        .phone-screen {
+            background: linear-gradient(160deg, #1a0a35, #0f0a20);
+            border-radius: 30px; min-height: 480px; overflow: hidden;
+            padding: 20px 16px;
+        }
+        .phone-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+        }
+        .phone-greet { font-size: 12px; color: rgba(255,255,255,0.6); }
+        .phone-name { font-size: 15px; font-weight: 700; color: white; }
+        .phone-notif {
+            width: 32px; height: 32px; background: rgba(124,58,237,0.2);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px;
+            position: relative;
+        }
+        .notif-badge {
+            position: absolute; top: -4px; right: -4px;
+            width: 14px; height: 14px; background: var(--red);
+            border-radius: 50%; font-size: 8px; color: white;
+            display: flex; align-items: center; justify-content: center; font-weight: 700;
+        }
+        .balance-card {
+            background: linear-gradient(135deg, var(--p1), var(--acc1));
+            border-radius: 20px; padding: 20px; margin-bottom: 16px;
+            position: relative; overflow: hidden;
+        }
+        .balance-card::before {
+            content: ''; position: absolute;
+            top: -20px; right: -20px;
+            width: 100px; height: 100px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+        .balance-label { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 6px; }
+        .balance-amount { font-size: 28px; font-weight: 900; color: white; margin-bottom: 12px; }
+        .balance-row { display: flex; justify-content: space-between; }
+        .bal-stat { text-align: center; }
+        .bal-stat-val { font-size: 13px; font-weight: 700; color: white; }
+        .bal-stat-lbl { font-size: 10px; color: rgba(255,255,255,0.6); }
+        .quick-actions {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px;
+        }
+        .qa-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; padding: 10px 4px; text-align: center;
+            font-size: 9px; color: var(--muted);
+        }
+        .qa-btn .qa-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+        .txn-header { font-size: 12px; font-weight: 700; color: white; margin-bottom: 10px; }
+        .txn-list { display: flex; flex-direction: column; gap: 8px; }
+        .txn {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.04); border-radius: 12px; padding: 10px;
+        }
+        .txn-icon {
+            width: 32px; height: 32px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 14px;
+            flex-shrink: 0;
+        }
+        .txn-info { flex: 1; }
+        .txn-name { font-size: 11px; font-weight: 600; color: white; }
+        .txn-date { font-size: 9px; color: var(--muted); }
+        .txn-amount { font-size: 12px; font-weight: 800; }
+        .pos { color: var(--green); }
+        .neg { color: var(--red); }
+
+        /* Floating Cards */
+        .float-card {
+            position: absolute; background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; padding: 14px 18px;
+            z-index: 3; font-size: 13px; white-space: nowrap;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .fc-left { left: -60px; top: 30%; animation: floatCard 3s ease-in-out infinite; }
+        .fc-right { right: -60px; bottom: 30%; animation: floatCard 3.5s ease-in-out infinite reverse; }
+        @keyframes floatCard {
+            0%,100%{transform:translateY(0);}
+            50%{transform:translateY(-8px);}
+        }
+        .fc-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+        .fc-val { font-size: 16px; font-weight: 800; }
+        .fc-tag { font-size: 10px; padding: 2px 8px; border-radius: 20px; margin-top: 4px; display: inline-block; }
+        .fc-green { background: rgba(16,185,129,0.2); color: var(--green); }
+        .fc-purple { background: rgba(124,58,237,0.2); color: var(--p3); }
+
+        /* FEATURES */
+        .section { padding: 90px 5%; position: relative; z-index: 1; }
+        .section-inner { max-width: 1200px; margin: 0 auto; }
+        .section-tag {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.3);
+            padding: 6px 16px; border-radius: 50px; font-size: 13px; color: var(--p3); font-weight: 600; margin-bottom: 18px;
+        }
+        .section-title { font-size: clamp(28px, 4vw, 46px); font-weight: 900; margin-bottom: 14px; }
+        .section-sub { font-size: 17px; color: var(--muted); line-height: 1.7; }
+        .section-header { text-align: center; margin-bottom: 60px; }
+
+        .features-alt { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+        .features-alt.reverse { direction: ltr; }
+        .features-alt.reverse > *:first-child { direction: rtl; }
+        .features-alt.reverse > *:last-child { direction: rtl; }
+        .feat-list { display: flex; flex-direction: column; gap: 24px; }
+        .feat-item {
+            display: flex; gap: 18px; align-items: flex-start;
+            background: var(--card); border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 20px 24px; transition: all 0.3s;
+        }
+        .feat-item:hover { border-color: rgba(124,58,237,0.5); transform: translateX(-4px); }
+        .feat-icon {
+            width: 50px; height: 50px; border-radius: 14px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 22px;
+        }
+        .feat-item h4 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+        .feat-item p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+        .visual-card {
+            background: var(--card); border: 1px solid var(--card-border);
+            border-radius: 24px; padding: 30px; position: relative; overflow: hidden;
+        }
+        .visual-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, var(--p1), var(--acc1));
+        }
+
+        /* STATS */
+        .stats-wrap {
+            background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(6,182,212,0.08));
+            border: 1px solid rgba(124,58,237,0.2);
+            border-radius: 24px; padding: 60px 40px;
+            display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; text-align: center;
+        }
+        .stat-box { padding: 10px; }
+        .stat-num { font-size: 44px; font-weight: 900; background: linear-gradient(135deg, var(--p2), var(--acc1)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .stat-plus { font-size: 28px; }
+        .stat-lbl { font-size: 15px; color: var(--muted); margin-top: 8px; }
+
+        /* TESTIMONIALS */
+        .carousel-wrap { overflow: hidden; position: relative; }
+        .carousel-track {
+            display: flex; gap: 24px;
+            animation: scrollCarousel 25s linear infinite;
+        }
+        .carousel-track:hover { animation-play-state: paused; }
+        @keyframes scrollCarousel {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .tc { 
+            background: var(--card); border: 1px solid var(--card-border);
+            border-radius: 20px; padding: 28px; min-width: 300px;
+            flex-shrink: 0; transition: border-color 0.3s;
+        }
+        .tc:hover { border-color: rgba(124,58,237,0.5); }
+        .tc-stars { color: #fbbf24; font-size: 14px; margin-bottom: 14px; }
+        .tc-text { font-size: 14px; color: var(--muted); line-height: 1.75; margin-bottom: 20px; }
+        .tc-author { display: flex; align-items: center; gap: 12px; }
+        .tc-ava {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 700; color: white; flex-shrink: 0;
+        }
+        .tc-name { font-size: 14px; font-weight: 700; }
+        .tc-role { font-size: 12px; color: var(--muted); }
+
+        /* CTA */
+        .cta-area { padding: 80px 5%; position: relative; z-index:1; }
+        .cta-box {
+            max-width: 900px; margin: 0 auto;
+            background: linear-gradient(135deg, rgba(124,58,237,0.25), rgba(6,182,212,0.12));
+            border: 1px solid rgba(124,58,237,0.35);
+            border-radius: 32px; padding: 70px 60px; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .cta-box::after {
+            content: ''; position: absolute; inset: -2px;
+            border-radius: 32px;
+            background: linear-gradient(135deg, var(--p1), var(--acc1), var(--p1));
+            z-index: -1;
+            background-size: 200%;
+            animation: borderRotate 4s linear infinite;
+            opacity: 0.4;
+        }
+        @keyframes borderRotate {
+            0%{background-position:0%} 100%{background-position:200%}
+        }
+        .cta-box h2 { font-size: clamp(26px, 4vw, 44px); font-weight: 900; margin-bottom: 16px; }
+        .cta-box p { font-size: 17px; color: var(--muted); margin-bottom: 40px; }
+        .cta-store-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .store-btn {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 30px; border-radius: 14px; text-decoration: none;
+            transition: all 0.3s; font-family: 'Cairo', sans-serif;
+        }
+        .store-btn-icon { font-size: 26px; }
+        .store-btn-small { font-size: 11px; color: rgba(255,255,255,0.7); display: block; }
+        .store-btn-big { font-size: 16px; font-weight: 800; color: white; display: block; }
+        .sb-apple { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); }
+        .sb-apple:hover { background: rgba(255,255,255,0.15); transform: translateY(-3px); }
+        .sb-google { background: linear-gradient(135deg, var(--p1), var(--acc1)); box-shadow: 0 8px 30px rgba(124,58,237,0.5); }
+        .sb-google:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(124,58,237,0.7); }
+
+        /* FOOTER */
+        footer {
+            background: rgba(10,6,20,0.9); border-top: 1px solid var(--card-border);
+            padding: 40px 5%; position: relative; z-index:1;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+        }
+        .f-logo { display: flex; align-items: center; gap: 10px; color: white; text-decoration: none; font-weight: 700; }
+        .footer-links { display: flex; gap: 24px; }
+        .footer-links a { color: var(--muted); text-decoration: none; font-size: 14px; transition: color 0.3s; }
+        .footer-links a:hover { color: var(--p3); }
+        .footer-cr { font-size: 13px; color: var(--muted); }
+        .built { text-align: center; padding: 14px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--card-border); position: relative; z-index:1; }
+        .built a { color: var(--p3); text-decoration: none; font-weight: 700; }
+
+        /* RESPONSIVE */
+        @media(max-width:991px) {
+            .hero-inner { grid-template-columns: 1fr; }
+            .hero-visual { margin-top: 40px; }
+            .fc-left, .fc-right { display: none; }
+            .features-alt { grid-template-columns: 1fr; }
+            .stats-wrap { grid-template-columns: repeat(2,1fr); }
+            .nav-links { display: none; }
+        }
+        @media(max-width:600px) {
+            .stats-wrap { grid-template-columns: 1fr 1fr; }
+            .cta-box { padding: 40px 24px; }
+            footer { flex-direction: column; text-align: center; }
+        }
+
+        /* ANIMATIONS */
+        .reveal { opacity:0; transform:translateY(30px); transition: all 0.6s ease; }
+        .reveal.show { opacity:1; transform:translateY(0); }
+    </style>
+</head>
+<body>
+    <div class="bg-mesh"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- NAV -->
+    <nav id="nav">
+        <a href="#" class="logo">
+            <div class="logo-ring">S</div>
+            <span class="logo-name">Swift<span>Pay</span></span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="#features">المميزات</a></li>
+            <li><a href="#security">الأمان</a></li>
+            <li><a href="#reviews">التقييمات</a></li>
+            <li><a href="#download">تحميل</a></li>
+        </ul>
+        <div class="nav-download">
+            <a href="#" class="dl-btn dl-ios">🍎 iOS</a>
+            <a href="#" class="dl-btn dl-android">▶ Android</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-inner">
+            <div>
+                <div class="hero-tag"><div class="live-dot"></div> متاح الآن على iOS و Android</div>
+                <h1>أرسل المال بـ<br><span class="grad">سرعة البرق</span><br>وأمان تام</h1>
+                <p>SwiftPay يجعل تحويل الأموال سهلاً كإرسال رسالة. ادفع فواتيرك، أرسل للعائلة، واستقبل مدفوعاتك — كل ذلك في ثوانٍ وبعمولة صفرية.</p>
+                <div class="download-btns">
+                    <a href="#" class="big-dl big-dl-apple">
+                        <span class="big-dl-icon">🍎</span>
+                        <div>
+                            <div class="big-dl-text-small">تحميل على</div>
+                            <div class="big-dl-text-big">App Store</div>
+                        </div>
+                    </a>
+                    <a href="#" class="big-dl big-dl-google">
+                        <span class="big-dl-icon">▶</span>
+                        <div>
+                            <div class="big-dl-text-small">احصل عليه من</div>
+                            <div class="big-dl-text-big">Google Play</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="app-rating">
+                    <div class="rating-avatars">
+                        <div class="rating-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">أ</div>
+                        <div class="rating-avatar" style="background:linear-gradient(135deg,#06b6d4,#0e7490);">م</div>
+                        <div class="rating-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706);">س</div>
+                        <div class="rating-avatar" style="background:linear-gradient(135deg,#10b981,#059669);">ن</div>
+                    </div>
+                    <div class="rating-text">
+                        <div class="rating-stars">★★★★★ 4.9</div>
+                        <div class="rating-count">+200,000 مستخدم راضٍ</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="phone-wrapper">
+                    <div class="float-card fc-left">
+                        <div class="fc-label">تحويل ناجح ✓</div>
+                        <div class="fc-val">$1,250</div>
+                        <div class="fc-tag fc-green">فورياً</div>
+                    </div>
+                    <div class="phone-frame">
+                        <div class="phone-notch">
+                            <div class="notch-cam"></div>
+                            <div class="notch-light"></div>
+                        </div>
+                        <div class="phone-screen">
+                            <div class="phone-header">
+                                <div>
+                                    <div class="phone-greet">مرحباً 👋</div>
+                                    <div class="phone-name">أحمد الرشيد</div>
+                                </div>
+                                <div class="phone-notif">
+                                    🔔
+                                    <div class="notif-badge">3</div>
+                                </div>
+                            </div>
+                            <div class="balance-card">
+                                <div class="balance-label">رصيدك الإجمالي</div>
+                                <div class="balance-amount">$12,840.50</div>
+                                <div class="balance-row">
+                                    <div class="bal-stat">
+                                        <div class="bal-stat-val">↑ $3,200</div>
+                                        <div class="bal-stat-lbl">وارد</div>
+                                    </div>
+                                    <div class="bal-stat">
+                                        <div class="bal-stat-val">↓ $890</div>
+                                        <div class="bal-stat-lbl">صادر</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="quick-actions">
+                                <div class="qa-btn"><span class="qa-icon">📤</span>إرسال</div>
+                                <div class="qa-btn"><span class="qa-icon">📥</span>استقبال</div>
+                                <div class="qa-btn"><span class="qa-icon">💳</span>دفع</div>
+                                <div class="qa-btn"><span class="qa-icon">🔄</span>تحويل</div>
+                            </div>
+                            <div class="txn-header">آخر المعاملات</div>
+                            <div class="txn-list">
+                                <div class="txn">
+                                    <div class="txn-icon" style="background:rgba(16,185,129,0.15);">🛒</div>
+                                    <div class="txn-info">
+                                        <div class="txn-name">Amazon Prime</div>
+                                        <div class="txn-date">اليوم، 2:30م</div>
+                                    </div>
+                                    <div class="txn-amount neg">-$14.99</div>
+                                </div>
+                                <div class="txn">
+                                    <div class="txn-icon" style="background:rgba(124,58,237,0.15);">💰</div>
+                                    <div class="txn-info">
+                                        <div class="txn-name">راتب أبريل</div>
+                                        <div class="txn-date">أمس، 9:00ص</div>
+                                    </div>
+                                    <div class="txn-amount pos">+$3,200</div>
+                                </div>
+                                <div class="txn">
+                                    <div class="txn-icon" style="background:rgba(245,158,11,0.15);">☕</div>
+                                    <div class="txn-info">
+                                        <div class="txn-name">Starbucks</div>
+                                        <div class="txn-date">أمس، 8:15ص</div>
+                                    </div>
+                                    <div class="txn-amount neg">-$6.50</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="float-card fc-right">
+                        <div class="fc-label">توفير هذا الشهر</div>
+                        <div class="fc-val">$420</div>
+                        <div class="fc-tag fc-purple">+18%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section" id="features">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <div class="section-tag">⚡ المميزات</div>
+                <h2 class="section-title">لماذا <span class="grad">SwiftPay؟</span></h2>
+                <p class="section-sub">تقنية من المستقبل في متناول يدك اليوم</p>
+            </div>
+            <div class="features-alt reveal">
+                <div class="feat-list">
+                    <div class="feat-item">
+                        <div class="feat-icon" style="background:rgba(124,58,237,0.15);">🚀</div>
+                        <div>
+                            <h4>تحويل فوري 24/7</h4>
+                            <p>أرسل الأموال في أقل من 3 ثوانٍ إلى أي شخص في العالم، في أي وقت من الليل أو النهار.</p>
+                        </div>
+                    </div>
+                    <div class="feat-item">
+                        <div class="feat-icon" style="background:rgba(6,182,212,0.15);">🌍</div>
+                        <div>
+                            <h4>50+ عملة عالمية</h4>
+                            <p>تحويل بين العملات بأفضل الأسعار وعمولة صفر. الدولار، اليورو، الريال والمزيد.</p>
+                        </div>
+                    </div>
+                    <div class="feat-item">
+                        <div class="feat-icon" style="background:rgba(245,158,11,0.15);">💡</div>
+                        <div>
+                            <h4>واجهة ذكية وبسيطة</h4>
+                            <p>تصميم بديهي يجعل أي عملية مالية سهلة حتى لمن لا خبرة لهم بالتطبيقات المالية.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="visual-card">
+                    <div style="font-size:13px; color:var(--muted); margin-bottom:16px;">📈 نمو التحويلات الشهرية</div>
+                    <svg viewBox="0 0 260 140" style="width:100%;" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="rgba(124,58,237,0.4)"/>
+                                <stop offset="100%" stop-color="rgba(124,58,237,0)"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M0,120 L40,100 L80,85 L120,60 L160,45 L200,25 L240,15" stroke="url(#lineGrad2)" stroke-width="0" fill="url(#lineGrad)"/>
+                        <path d="M0,120 L40,100 L80,85 L120,60 L160,45 L200,25 L240,15 L240,140 L0,140 Z" fill="url(#lineGrad)"/>
+                        <defs>
+                            <linearGradient id="lineGrad2" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stop-color="#7c3aed"/>
+                                <stop offset="100%" stop-color="#06b6d4"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M0,120 L40,100 L80,85 L120,60 L160,45 L200,25 L240,15" stroke="url(#lineGrad2)" stroke-width="3" fill="none" stroke-linecap="round"/>
+                        <circle cx="240" cy="15" r="5" fill="#06b6d4"/>
+                        <circle cx="120" cy="60" r="4" fill="#a855f7"/>
+                        <circle cx="0" cy="120" r="4" fill="#7c3aed"/>
+                    </svg>
+                    <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;">
+                        <div style="text-align:center;">
+                            <div style="font-size:20px;font-weight:900;color:var(--p3);">$2.8M</div>
+                            <div style="font-size:11px;color:var(--muted);">تحويلات هذا الشهر</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:20px;font-weight:900;color:var(--acc1);">+340%</div>
+                            <div style="font-size:11px;color:var(--muted);">نمو سنوي</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECURITY -->
+    <section class="section" id="security" style="background:rgba(255,255,255,0.01);">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <div class="section-tag">🔒 الأمان أولاً</div>
+                <h2 class="section-title">أمانك <span class="grad">أولويتنا القصوى</span></h2>
+                <p class="section-sub">حماية بنكية من الدرجة الأولى لكل معاملة</p>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;">
+                <div class="feat-item reveal" style="flex-direction:column;text-align:center;align-items:center;">
+                    <div class="feat-icon" style="background:rgba(16,185,129,0.15);">🛡️</div>
+                    <h4>تشفير 256-bit</h4>
+                    <p>كل بياناتك ومعاملاتك مشفرة بأعلى معايير الأمان المصرفي.</p>
+                </div>
+                <div class="feat-item reveal" style="flex-direction:column;text-align:center;align-items:center;transition-delay:0.1s;">
+                    <div class="feat-icon" style="background:rgba(124,58,237,0.15);">👆</div>
+                    <h4>بصمة الإصبع والوجه</h4>
+                    <p>تأكيد هويتك بطريقة آمنة وسريعة عبر البيومترية المتقدمة.</p>
+                </div>
+                <div class="feat-item reveal" style="flex-direction:column;text-align:center;align-items:center;transition-delay:0.2s;">
+                    <div class="feat-icon" style="background:rgba(6,182,212,0.15);">🔔</div>
+                    <h4>إشعارات فورية</h4>
+                    <p>تنبيه فوري لأي نشاط على حسابك لحظة حدوثه في أي مكان.</p>
+                </div>
+                <div class="feat-item reveal" style="flex-direction:column;text-align:center;align-items:center;transition-delay:0.3s;">
+                    <div class="feat-icon" style="background:rgba(245,158,11,0.15);">🤖</div>
+                    <h4>AI كشف الاحتيال</h4>
+                    <p>ذكاء اصطناعي يراقب معاملاتك ويوقف أي نشاط مشبوه فوراً.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="section">
+        <div class="section-inner">
+            <div class="stats-wrap reveal">
+                <div class="stat-box">
+                    <div class="stat-num"><span class="stat-plus">+</span><span data-target="200">0</span>K</div>
+                    <div class="stat-lbl">مستخدم نشط</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-num"><span class="stat-plus">$</span><span data-target="50">0</span>M</div>
+                    <div class="stat-lbl">إجمالي التحويلات</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-num"><span data-target="50">0</span><span class="stat-plus">+</span></div>
+                    <div class="stat-lbl">عملة مدعومة</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-num"><span data-target="4">0</span>.<span>9</span></div>
+                    <div class="stat-lbl">تقييم المتجر ⭐</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section class="section" id="reviews">
+        <div class="section-inner">
+            <div class="section-header reveal">
+                <div class="section-tag">💬 آراء المستخدمين</div>
+                <h2 class="section-title">العملاء <span class="grad">يتحدثون</span></h2>
+            </div>
+            <div class="carousel-wrap">
+                <div class="carousel-track" id="carousel">
+                    <div class="tc">
+                        <div class="tc-stars">★★★★★</div>
+                        <p class="tc-text">"أرسلت لأهلي 2000 دولار في أقل من دقيقة! SwiftPay غير حياتي تماماً."</p>
+                        <div class="tc-author">
+                            <div class="tc-ava" style="background:linear-gradient(135deg,#7c3aed,#06b6d4);">خ</div>
+                            <div><div class="tc-name">خالد العتيبي</div><div class="tc-role">مهندس، السعودية</div></div>
+                        </div>
+                    </div>
+                    <div class="tc">
+                        <div class="tc-stars">★★★★★</div>
+                        <p class="tc-text">"أخيراً تطبيق مدفوعات عربي لا يأخذ عمولة! الواجهة جميلة وسريعة جداً."</p>
+                        <div class="tc-author">
+                            <div class="tc-ava" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">ر</div>
+                            <div><div class="tc-name">رانيا المهدي</div><div class="tc-role">رائدة أعمال، مصر</div></div>
+                        </div>
+                    </div>
+                    <div class="tc">
+                        <div class="tc-stars">★★★★★</div>
+                        <p class="tc-text">"الدعم الفني ممتاز وسريع. حل مشكلتي في 5 دقائق. أنصح به بشدة!"</p>
+                        <div class="tc-author">
+                            <div class="tc-ava" style="background:linear-gradient(135deg,#10b981,#06b6d4);">ف</div>
+                            <div><div class="tc-name">فيصل النجار</div><div class="tc-role">تاجر، الكويت</div></div>
+                        </div>
+                    </div>
+                    <div class="tc">
+                        <div class="tc-stars">★★★★★</div>
+                        <p class="tc-text">"أستخدمه يومياً لدفع فواتيري ومصروفي. العملية واضحة وبسيطة جداً."</p>
+                        <div class="tc-author">
+                            <div class="tc-ava" style="background:linear-gradient(135deg,#a855f7,#f59e0b);">ن</div>
+                            <div><div class="tc-name">نادية الزهراني</div><div class="tc-role">طالبة جامعية، المغرب</div></div>
+                        </div>
+                    </div>
+                    <!-- Duplicate for infinite scroll -->
+                    <div class="tc">
+                        <div class="tc-stars">★★★★★</div>
+                        <p class="tc-text">"أرسلت لأهلي 2000 دولار في أقل من دقيقة! SwiftPay غير حياتي تماماً."</p>
+                        <div class="tc-author">
+                            <div class="tc-ava" style="background:linear-gradient(135deg,#7c3aed,#06b6d4);">خ</div>
+                            <div><div class="tc-name">خالد العتيبي</div><div class="tc-role">مهندس، السعودية</div></div>
+                        </div>
+                    </div>
+                    <div class="tc">
+                        <div class="tc-stars">★★★★★</div>
+                        <p class="tc-text">"أخيراً تطبيق مدفوعات عربي لا يأخذ عمولة! الواجهة جميلة وسريعة جداً."</p>
+                        <div class="tc-author">
+                            <div class="tc-ava" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">ر</div>
+                            <div><div class="tc-name">رانيا المهدي</div><div class="tc-role">رائدة أعمال، مصر</div></div>
+                        </div>
+                    </div>
+                    <div class="tc">
+                        <div class="tc-stars">★★★★★</div>
+                        <p class="tc-text">"الدعم الفني ممتاز وسريع. حل مشكلتي في 5 دقائق. أنصح به بشدة!"</p>
+                        <div class="tc-author">
+                            <div class="tc-ava" style="background:linear-gradient(135deg,#10b981,#06b6d4);">ف</div>
+                            <div><div class="tc-name">فيصل النجار</div><div class="tc-role">تاجر، الكويت</div></div>
+                        </div>
+                    </div>
+                    <div class="tc">
+                        <div class="tc-stars">★★★★★</div>
+                        <p class="tc-text">"أستخدمه يومياً لدفع فواتيري ومصروفي. العملية واضحة وبسيطة جداً."</p>
+                        <div class="tc-author">
+                            <div class="tc-ava" style="background:linear-gradient(135deg,#a855f7,#f59e0b);">ن</div>
+                            <div><div class="tc-name">نادية الزهراني</div><div class="tc-role">طالبة جامعية، المغرب</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA / DOWNLOAD -->
+    <section class="cta-area" id="download">
+        <div class="cta-box reveal">
+            <h2>حمّل التطبيق<br><span class="grad">الآن مجاناً</span></h2>
+            <p>انضم إلى 200,000+ مستخدم يثقون بـ SwiftPay لإدارة أموالهم يومياً</p>
+            <div class="cta-store-row">
+                <a href="#" class="store-btn sb-apple">
+                    <span class="store-btn-icon">🍎</span>
+                    <div>
+                        <span class="store-btn-small">تحميل على</span>
+                        <span class="store-btn-big">App Store</span>
+                    </div>
+                </a>
+                <a href="#" class="store-btn sb-google">
+                    <span class="store-btn-icon">▶</span>
+                    <div>
+                        <span class="store-btn-small">احصل عليه من</span>
+                        <span class="store-btn-big">Google Play</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <a href="#" class="f-logo">
+            <div class="logo-ring">S</div>
+            <span>SwiftPay</span>
+        </a>
+        <div class="footer-links">
+            <a href="#">الخصوصية</a>
+            <a href="#">الشروط</a>
+            <a href="#">الدعم</a>
+        </div>
+        <p class="footer-cr">© 2026 SwiftPay. جميع الحقوق محفوظة.</p>
+    </footer>
+    <div class="built">
+        صُنع بـ  بواسطة <a href="#">MYTHIC SYSTEM</a> — متخصصون في تطبيقات الهاتف المحمول
+    </div>
+
+    <script>
+        // Particles
+        const container = document.getElementById('particles');
+        for(let i = 0; i < 40; i++){
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.cssText = `
+                left: ${Math.random()*100}%;
+                --dx: ${(Math.random()-0.5)*200}px;
+                animation-duration: ${5 + Math.random()*10}s;
+                animation-delay: ${Math.random()*10}s;
+                width: ${1 + Math.random()*2}px;
+                height: ${1 + Math.random()*2}px;
+                opacity: ${0.3 + Math.random()*0.5};
+            `;
+            container.appendChild(p);
+        }
+
+        // Navbar
+        window.addEventListener('scroll', () => {
+            document.getElementById('nav').classList.toggle('scrolled', scrollY > 60);
+        });
+
+        // Reveal observer
+        const obs = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if(e.isIntersecting) {
+                    e.target.classList.add('show');
+                    const counters = e.target.querySelectorAll('[data-target]');
+                    counters.forEach(c => {
+                        const t = parseInt(c.dataset.target);
+                        let curr = 0; const step = t/50;
+                        const timer = setInterval(() => {
+                            curr += step;
+                            if(curr >= t){ curr = t; clearInterval(timer); }
+                            c.textContent = Math.floor(curr);
+                        }, 30);
+                    });
+                    obs.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(e => obs.observe(e));
+    </script>
+</body>
+</html>
